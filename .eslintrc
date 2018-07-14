@@ -1,0 +1,16 @@
+{
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+    },
+    "env": {
+        "node": true,
+        "es6": true,
+    },
+    "rules": {
+        "indent": ["error", 2], // spaces indent of 4
+        "semi": [2, "always"], // always needs semicolons where needed
+        "quotes": ["error", "double"], // only double quotes allowed
+    }
+}
