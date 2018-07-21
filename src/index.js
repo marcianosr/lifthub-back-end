@@ -1,6 +1,9 @@
 import express from "express";
 import bodyParser from "body-parser";
-import Busboy from "busboy";
+import multer from "multer";
+import { PdfReader } from "pdfreader";
+
+import { parse } from "./core/parser";
 
 const app = express();
 
@@ -16,7 +19,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.use(allowCrossDomain);
 
 // Router
-
 app.get("/", (request, response) => {
   response.json({
     logs: request.body
@@ -35,32 +37,23 @@ app.get("/logs/:id", (request, response) => {
   });
 });
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-app.post("/upload", (request, response) => {
-  let busboy = new Busboy({ headers: request.headers });
-  /*eslint-disable no-unused-vars*/
-  busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
+app.post("/upload", upload.single("log"), (request, response) => {
+  const buffer = request.file.buffer;
+  const pdfreader = new PdfReader();
 
-    file.on("data", (data) => {
+  pdfreader.parseBuffer(buffer, (error, data) => {
+    if (error) {
+      response.json({ error: `Error converting PDF data: ${error}`});
+    }
 
-    });
-    file.on("end", () => {
-
-    });
+    parse(data.text)
   });
-
-  busboy.on("field", (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) => {
-    // log val
-  });
-
-  busboy.on("finish", () => {
-    response.writeHead(303, { Connection: "close", Location: "/" });
-    response.end();
-  });
-
-  request.pipe(busboy);
-
 });
+
+
 
 /*eslint no-console: ["error", { allow: ["log", "warn"] }] */
 app.listen(5000, () => console.log("Example app listening on port 5000!"));
